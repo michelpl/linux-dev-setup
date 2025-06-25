@@ -20,8 +20,8 @@ Easily bootstrap your Ubuntu environment with a beautiful interactive menu and s
 ### 1. Clone this repo
 
 ```bash
-git clone https://github.com/michelpl/ubuntu-setup.git
-cd ubuntu-setup
+git clone https://github.com/michelpl/linux-dev-environment.git
+cd linux-dev-environment/ubuntu
 chmod +x setup.sh
 ```
 
