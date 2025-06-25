@@ -1,4 +1,4 @@
-# 🚀 Ubuntu Setup Automation
+# 🚀 Linux Dev Setup Automation
 
 Easily bootstrap your Ubuntu environment with a beautiful interactive menu and script automation. Install your favorite tools, set global aliases, and even uninstall them later — all with a single command.
 
@@ -67,7 +67,7 @@ You’ll be presented with a checklist of all installed apps (with uninstall scr
 ## 🗂️ Project Structure
 
 ```
-ubuntu-setup/
+linux-dev-environment/Ubuntu
 ├── setup.sh               # Main entry point
 ├── apps/
 │   ├── chrome.sh          # App install scripts
