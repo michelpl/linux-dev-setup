@@ -38,11 +38,12 @@ while true; do
     if [ -f "$SHELL_RC" ]; then
       grep -qxF 'export DOTNET_ROOT="$HOME/.dotnet"' "$SHELL_RC" || echo 'export DOTNET_ROOT="$HOME/.dotnet"' >> "$SHELL_RC"
       grep -qxF 'export PATH="$HOME/.dotnet:$PATH"' "$SHELL_RC" || echo 'export PATH="$HOME/.dotnet:$PATH"' >> "$SHELL_RC"
+      grep -qxF 'export PATH="$HOME/.dotnet/tools:$PATH"' "$SHELL_RC" || echo 'export PATH="$HOME/.dotnet/tools:$PATH"' >> "$SHELL_RC"
     fi
   done
 
   export DOTNET_ROOT="$HOME/.dotnet"
-  export PATH="$HOME/.dotnet:$PATH"
+  export PATH="$HOME/.dotnet:$HOME/.dotnet/tools:$PATH"
 
   INSTALLED_VERSION=$("$DOTNET_INSTALL_DIR/dotnet" --list-sdks | grep "^$SELECTED_VERSION" | head -n 1)
 
