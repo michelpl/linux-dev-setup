@@ -7,7 +7,7 @@ echo "🟣 .NET SDK Installer (Multiple Versions)"
 while true; do
 
   SELECTED_VERSION=$(whiptail --title ".NET SDK Installer" --inputbox \
-  "Enter the version of the .NET SDK you want to install (e.g. 6.0, 7.0, 8.0):" \
+  "Enter the version of the .NET SDK you want to install (e.g. 6.0.100, 7.0.400, 8.0.100, 9.0.100):" \
   10 60 3>&1 1>&2 2>&3)
 
   if [ -z "$SELECTED_VERSION" ]; then
@@ -21,18 +21,30 @@ while true; do
     break
   fi
 
-  if ! dpkg -l | grep -q packages-microsoft-prod; then
-    echo "📦 Setting up Microsoft package feed..."
-    wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-    sudo dpkg -i packages-microsoft-prod.deb
-    rm packages-microsoft-prod.deb
-    sudo apt update
+  DOTNET_INSTALL_DIR="$HOME/.dotnet"
+  DOTNET_INSTALL_SCRIPT="dotnet-install.sh"
+
+  if [ ! -f "$DOTNET_INSTALL_SCRIPT" ]; then
+    echo "📥 Downloading dotnet-install.sh..."
+    wget -q https://dot.net/v1/dotnet-install.sh -O "$DOTNET_INSTALL_SCRIPT"
+    chmod +x "$DOTNET_INSTALL_SCRIPT"
   fi
 
-  echo "📥 Installing .NET SDK $SELECTED_VERSION..."
-  sudo apt install -y dotnet-sdk-"$SELECTED_VERSION"
+  echo "📥 Installing .NET SDK $SELECTED_VERSION to $DOTNET_INSTALL_DIR..."
+  ./$DOTNET_INSTALL_SCRIPT --version "$SELECTED_VERSION" --install-dir "$DOTNET_INSTALL_DIR" --no-path
 
-  INSTALLED_VERSION=$(dotnet --list-sdks | grep "^$SELECTED_VERSION" | head -n 1)
+  # Add to PATH if not already present (avoid duplicating lines)
+  for SHELL_RC in "$HOME/.bashrc" "$HOME/.zshrc"; do
+    if [ -f "$SHELL_RC" ]; then
+      grep -qxF 'export DOTNET_ROOT="$HOME/.dotnet"' "$SHELL_RC" || echo 'export DOTNET_ROOT="$HOME/.dotnet"' >> "$SHELL_RC"
+      grep -qxF 'export PATH="$HOME/.dotnet:$PATH"' "$SHELL_RC" || echo 'export PATH="$HOME/.dotnet:$PATH"' >> "$SHELL_RC"
+    fi
+  done
+
+  export DOTNET_ROOT="$HOME/.dotnet"
+  export PATH="$HOME/.dotnet:$PATH"
+
+  INSTALLED_VERSION=$("$DOTNET_INSTALL_DIR/dotnet" --list-sdks | grep "^$SELECTED_VERSION" | head -n 1)
 
   if [ -n "$INSTALLED_VERSION" ]; then
     echo "✅ .NET SDK $SELECTED_VERSION installed successfully."
@@ -42,7 +54,7 @@ while true; do
 
   if ! whiptail --title "Install Another?" --yesno \
   "Do you want to install another .NET SDK version?" 10 60; then
-    echo "👉 Continuing to next setup script..."
+    echo "👉 Installation finished. If this is your first .NET installation, close and reopen your terminal to ensure the PATH is correct."
     break
   fi
 
