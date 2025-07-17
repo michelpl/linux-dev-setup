@@ -2,6 +2,12 @@
 
 Thank you for your interest in contributing! 🎉
 
+## About this Project
+
+All install and uninstall scripts are tested and maintained for Ubuntu 24.04 LTS. Please ensure your contributions are compatible with this version.
+
+If you want to contribute scripts for another OS/version, create a new folder named after the OS and version you tested (e.g., `Ubuntu-22.04`, `Fedora-39`, `Debian-12`). Follow the same structure and conventions as the existing folders.
+
 ## How to Contribute
 
 1. **Fork the repository** and create your branch from `main`.
@@ -22,4 +28,3 @@ Thank you for your interest in contributing! 🎉
 - For questions or suggestions, open an issue.
 
 Happy hacking! 🚀
-

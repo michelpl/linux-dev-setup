@@ -82,7 +82,9 @@ linux-dev-environment/Ubuntu
 
 ---
 
-## ✍️ Adding a New App
+## ✍️ Adding a New App or Contributing
+
+Want to add a new app or improve the setup? Contributions are welcome!
 
 1. Create an install script inside `apps/`:
    ```bash
@@ -92,13 +94,39 @@ linux-dev-environment/Ubuntu
    ```bash
    apps/uninstall/mytool-uninstall.sh
    ```
-3. It will automatically appear in the setup and uninstall menus.
+3. Your app will automatically appear in the setup and uninstall menus.
+4. Open a Pull Request with your changes!
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+
+---
+
+## 🚀 Usage
+
+- To install an app:
+  ```bash
+  ./setup.sh i <appname>
+  # or, if globally installed:
+  setup i <appname>
+  ```
+- To uninstall an app:
+  ```bash
+  ./setup.sh u <appname>
+  # or, if globally installed:
+  setup u <appname>
+  ```
+- To use the interactive menu:
+  ```bash
+  ./setup.sh
+  # or
+  setup
+  ```
 
 ---
 
 ## 🧑‍💻 Requirements
 
-- Ubuntu (tested on 22.04+)
+- Ubuntu (tested on 24.04+)
 - `whiptail` (`sudo apt install whiptail`)
 - Internet connection
 - Permissions to install packages (`sudo`)
@@ -107,8 +135,7 @@ linux-dev-environment/Ubuntu
 
 ## 📖 License
 
-MIT License © Michel Lima
-
+MIT License © 
 ---
 
 > Made for devs who hate setting things up manually.
