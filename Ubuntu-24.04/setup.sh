@@ -14,6 +14,48 @@ APPS_DIR="$SCRIPT_DIR/apps"
 UNINSTALL_DIR="$APPS_DIR/uninstall"
 LOG_FILE="$SCRIPT_DIR/install.log"
 
+# ------------------ INSTALAÇÃO DIRETA POR PARÂMETRO ------------------
+if [ "$1" == "install" ] && [ $# -eq 2 ]; then
+    APP_SCRIPT="$APPS_DIR/$2.sh"
+    TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+    if [ -f "$APP_SCRIPT" ]; then
+        echo "⚙️ Installing $2..."
+        sudo apt update && sudo apt upgrade -y
+        if bash "$APP_SCRIPT"; then
+            echo "$TIMESTAMP - installed $2 (direct)" >> "$LOG_FILE"
+            echo "✅ $2 installed successfully."
+        else
+            echo "$TIMESTAMP - FAILED to install $2 (direct)" >> "$LOG_FILE"
+            echo "❌ Failed to install $2."
+        fi
+        exit 0
+    else
+        echo "❌ App script not found: $APP_SCRIPT"
+        exit 1
+    fi
+fi
+
+# ------------------ DIRECT INSTALL BY PARAMETER (NEW SHORT SYNTAX) ------------------
+if [ "$1" == "i" ] && [ $# -eq 2 ]; then
+    APP_SCRIPT="$APPS_DIR/$2.sh"
+    TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+    if [ -f "$APP_SCRIPT" ]; then
+        echo "⚙️ Installing $2..."
+        sudo apt update && sudo apt upgrade -y
+        if bash "$APP_SCRIPT"; then
+            echo "$TIMESTAMP - installed $2 (direct)" >> "$LOG_FILE"
+            echo "✅ $2 installed successfully."
+        else
+            echo "$TIMESTAMP - FAILED to install $2 (direct)" >> "$LOG_FILE"
+            echo "❌ Failed to install $2."
+        fi
+        exit 0
+    else
+        echo "❌ App script not found: $APP_SCRIPT"
+        exit 1
+    fi
+fi
+
 # ------------------ DESINSTALAÇÃO ------------------
 
 if [ "$1" == "uninstall" ]; then
@@ -76,6 +118,32 @@ if [ "$1" == "uninstall" ]; then
   echo ""
   echo "✅ Uninstall completed."
   exit 0
+fi
+
+# ------------------ DIRECT UNINSTALL BY PARAMETER (NEW SHORT SYNTAX) ------------------
+if [ "$1" == "u" ] && [ $# -eq 2 ]; then
+    read -p "Are you sure you want to uninstall $2? (y/N): " confirm
+    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+        echo "Uninstall cancelled."
+        exit 0
+    fi
+    script="$UNINSTALL_DIR/$2-uninstall.sh"
+    TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+    if [ -f "$script" ]; then
+        echo "🗑️ Uninstalling $2..."
+        if bash "$script"; then
+            echo "$TIMESTAMP - uninstalled $2 (direct)" >> "$LOG_FILE"
+            echo "✅ $2 uninstalled successfully."
+        else
+            echo "$TIMESTAMP - FAILED to uninstall $2 (direct)" >> "$LOG_FILE"
+            echo "❌ Failed to uninstall $2."
+        fi
+        exit 0
+    else
+        echo "⚠️ Uninstall script not found: $script"
+        echo "$TIMESTAMP - FAILED to uninstall $2 (not found)" >> "$LOG_FILE"
+        exit 1
+    fi
 fi
 
 # ------------------ INSTALAÇÃO ------------------
