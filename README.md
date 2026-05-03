@@ -15,6 +15,18 @@ Easily bootstrap your Ubuntu environment with a beautiful interactive menu and s
 
 ---
 
+## ⚡ Quick install via curl (Ubuntu)
+
+If you want to start with a minimal setup, run:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/michelpl/linux-dev-environment/main/script.sh | bash
+```
+
+This script (`script.sh`) is compatible with Ubuntu, installs `git` and the GitHub CLI (`gh`), waits for GitHub login, creates `~/projects`, and clones `michelpl/linux-dev-setup` into `~/projects/linux-dev-setup`.
+
+---
+
 ## ⚙️ Usage
 
 ### 1. Clone this repo
