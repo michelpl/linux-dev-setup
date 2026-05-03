@@ -15,8 +15,20 @@ export NVM_DIR="$HOME/.nvm"
 # shellcheck source=/dev/null
 source "$NVM_DIR/nvm.sh"
 
+if command -v node >/dev/null 2>&1; then
+  CURRENT_NODE_VERSION=$(node -v)
+  echo "ℹ️ Node.js already installed: $CURRENT_NODE_VERSION"
+
+  if whiptail --title "Node.js already installed" --yesno \
+  "Node.js $CURRENT_NODE_VERSION is already installed. Do you want to update/install another version?" 10 70; then
+    echo "🔄 Proceeding with Node.js update/version installation..."
+  else
+    echo "✅ Keeping current Node.js version: $CURRENT_NODE_VERSION"
+    exit 0
+  fi
+fi
+
 while true; do
-  # Input com dica clara
   NODE_VERSION=$(whiptail --title "Node.js Installer" --inputbox \
   "Enter the version of Node.js you want to install.\n\nExamples:\n  - '20' (latest 20.x)\n  - '16.19.1' (specific version)\n  - 'lts' (latest stable version)\n" \
   15 70 3>&1 1>&2 2>&3)
@@ -27,7 +39,7 @@ while true; do
   fi
 
   if ! whiptail --title "Confirm Installation" --yesno \
-  "Install Node.js version: $NODE_VERSION?" 10 60; then
+  "Install/Update Node.js version: $NODE_VERSION?" 10 60; then
     echo "❌ Installation cancelled by user."
     break
   fi
@@ -39,16 +51,15 @@ while true; do
 
   INSTALLED_VERSION=$(node -v 2>/dev/null)
   if [[ "$INSTALLED_VERSION" == v$NODE_VERSION* || "$NODE_VERSION" == "lts" ]]; then
-    echo "✅ Node.js $INSTALLED_VERSION installed successfully."
+    echo "✅ Node.js $INSTALLED_VERSION ready to use."
     npm -v
   else
     echo "⚠️ Node.js version $NODE_VERSION may not have been installed properly."
   fi
 
   if ! whiptail --title "Install Another?" --yesno \
-  "Do you want to install another Node.js version?" 10 60; then
+  "Do you want to install/update another Node.js version?" 10 60; then
     echo "👉 Continuing to next setup script..."
     break
   fi
-
 done
