@@ -17,6 +17,9 @@ LOG_FILE="$SCRIPT_DIR/install.log"
 # ------------------ INSTALAÇÃO DIRETA POR PARÂMETRO ------------------
 if [ "$1" == "install" ] && [ $# -eq 2 ]; then
     APP_SCRIPT="$APPS_DIR/$2.sh"
+    if [ ! -f "$APP_SCRIPT" ] && [ -f "$APPS_DIR/$2/setup.sh" ]; then
+        APP_SCRIPT="$APPS_DIR/$2/setup.sh"
+    fi
     TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
     if [ -f "$APP_SCRIPT" ]; then
         echo "⚙️ Installing $2..."
@@ -38,6 +41,9 @@ fi
 # ------------------ DIRECT INSTALL BY PARAMETER (NEW SHORT SYNTAX) ------------------
 if [ "$1" == "i" ] && [ $# -eq 2 ]; then
     APP_SCRIPT="$APPS_DIR/$2.sh"
+    if [ ! -f "$APP_SCRIPT" ] && [ -f "$APPS_DIR/$2/setup.sh" ]; then
+        APP_SCRIPT="$APPS_DIR/$2/setup.sh"
+    fi
     TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
     if [ -f "$APP_SCRIPT" ]; then
         echo "⚙️ Installing $2..."
@@ -158,8 +164,17 @@ MENU_ITEMS+=("global" "Make this script global" OFF)
 MENU_ITEMS+=("uninstall" "Go to the uninstall menu" OFF)
 
 for file in "$APPS_DIR"/*.sh; do
+    [ -e "$file" ] || continue
     app_name=$(basename "$file" .sh)
     MENU_ITEMS+=("$app_name" "$app_name setup" OFF)
+done
+
+for dir in "$APPS_DIR"/*/; do
+    [ -d "$dir" ] || continue
+    if [ -f "$dir/setup.sh" ]; then
+        app_name=$(basename "$dir")
+        MENU_ITEMS+=("$app_name" "$app_name setup" OFF)
+    fi
 done
 
 CHOICES=$(whiptail --title "Ubuntu Setup" --checklist \
@@ -210,6 +225,10 @@ for choice in $CHOICES; do
     fi
 
     script="$APPS_DIR/$choice.sh"
+    if [ ! -f "$script" ] && [ -f "$APPS_DIR/$choice/setup.sh" ]; then
+        script="$APPS_DIR/$choice/setup.sh"
+    fi
+
     if [ -f "$script" ]; then
         echo "⚙️ Running $choice setup..."
         if bash "$script"; then
