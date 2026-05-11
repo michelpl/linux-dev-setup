@@ -20,7 +20,7 @@ Easily bootstrap your Ubuntu environment with a beautiful interactive menu and s
 If you want to start with a minimal setup, run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/michelpl/linux-dev-environment/main/script.sh | bash
+curl -fsSL https://raw.githubusercontent.com/michelpl/linux-dev-setup/main/script.sh | bash
 ```
 
 This script (`script.sh`) is compatible with Ubuntu, installs `git` and the GitHub CLI (`gh`), waits for GitHub login, creates `~/projects`, and clones `michelpl/linux-dev-setup` into `~/projects/linux-dev-setup`.
@@ -32,8 +32,8 @@ This script (`script.sh`) is compatible with Ubuntu, installs `git` and the GitH
 ### 1. Clone this repo
 
 ```bash
-git clone https://github.com/michelpl/linux-dev-environment.git
-cd linux-dev-environment/ubuntu
+git clone https://github.com/michelpl/linux-dev-setup.git
+cd linux-dev-setup/Ubuntu-24.04
 chmod +x setup.sh
 ```
 
@@ -79,7 +79,7 @@ You’ll be presented with a checklist of all installed apps (with uninstall scr
 ## 🗂️ Project Structure
 
 ```
-linux-dev-environment/Ubuntu
+linux-dev-setup/Ubuntu-24.04
 ├── setup.sh               # Main entry point
 ├── apps/
 │   ├── chrome.sh          # App install scripts
