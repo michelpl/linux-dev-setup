@@ -20,6 +20,46 @@ if ! command -v nvm >/dev/null 2>&1; then
   exit 1
 fi
 
+
+ensure_nvm_shell_integration() {
+  local marker_start="# >>> nvm auto-load >>>"
+  local block
+  local shell_name
+  local target_files=()
+
+  block=$(cat <<'EOF'
+# >>> nvm auto-load >>>
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+# <<< nvm auto-load <<<
+EOF
+)
+
+  shell_name=$(basename "${SHELL:-}")
+  case "$shell_name" in
+    bash)
+      target_files+=("$HOME/.bashrc")
+      ;;
+    zsh)
+      target_files+=("$HOME/.zshrc")
+      ;;
+    *)
+      target_files+=("$HOME/.bashrc" "$HOME/.zshrc")
+      ;;
+  esac
+
+  for shell_file in "${target_files[@]}"; do
+    touch "$shell_file"
+    if ! grep -Fq "$marker_start" "$shell_file"; then
+      {
+        echo
+        echo "$block"
+      } >> "$shell_file"
+      echo "ℹ️ Added nvm auto-load block to $shell_file"
+    fi
+  done
+}
+
 # Busca versões da fonte oficial do Node.js
 NODE_INDEX_JSON=$(mktemp)
 trap 'rm -f "$NODE_INDEX_JSON"' EXIT
@@ -139,6 +179,7 @@ while true; do
 
   nvm use "$RESOLVED_VERSION"
   nvm alias default "$RESOLVED_VERSION"
+  ensure_nvm_shell_integration
 
   INSTALLED_VERSION=$(node -v 2>/dev/null || true)
   if [ -n "$INSTALLED_VERSION" ]; then
