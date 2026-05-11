@@ -1,4 +1,10 @@
 #!/bin/bash
+
+# Re-exec with bash if called from sh/dash
+if [ -z "${BASH_VERSION:-}" ]; then
+  exec bash "$0" "$@"
+fi
+
 set -e
 
 # Resolve caminho real mesmo via symlink
