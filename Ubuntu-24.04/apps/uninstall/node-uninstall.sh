@@ -1,39 +1,49 @@
 #!/bin/bash
-set -euo pipefail
 
-echo "🧹 Removing Node.js (NVM + npm)..."
+# Re-exec with bash if called from sh/dash
+if [ -z "${BASH_VERSION:-}" ]; then
+  exec bash "$0" "$@"
+fi
 
-NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+set -e
 
-remove_nvm_block() {
-  local file="$1"
-  [ -f "$file" ] || return 0
+NVM_DIR="$HOME/.nvm"
 
-  if grep -Fq "# >>> nvm auto-load >>>" "$file"; then
-    sed -i '/# >>> nvm auto-load >>>/,/# <<< nvm auto-load <<</d' "$file"
-    echo "ℹ️ Removed nvm auto-load block from $file"
+remove_profile_entries() {
+  local profile="$1"
+  if [ ! -f "$profile" ]; then
+    return
   fi
+
+  sed -i '/# NVM initialization/,+2d' "$profile" || true
+  sed -i '/NVM_DIR.*\.\/nvm.sh/d' "$profile" || true
+  sed -i '/bash_completion/d' "$profile" || true
 }
 
-if [ -d "$NVM_DIR" ]; then
-  rm -rf "$NVM_DIR"
-  echo "✅ Removed $NVM_DIR"
-else
-  echo "ℹ️ NVM directory not found at $NVM_DIR"
-fi
+main() {
+  echo "🧹 Removing NVM and shell configuration..."
 
-remove_nvm_block "$HOME/.bashrc"
-remove_nvm_block "$HOME/.zshrc"
+  if [ -d "$NVM_DIR" ]; then
+    rm -rf "$NVM_DIR"
+    echo "🗑️ Removed NVM directory: $NVM_DIR"
+  else
+    echo "ℹ️ Directory $NVM_DIR not found. Skipping removal."
+  fi
 
-# Optional: remove global npm cache and config created in user home
-if [ -d "$HOME/.npm" ]; then
-  rm -rf "$HOME/.npm"
-  echo "✅ Removed $HOME/.npm"
-fi
+  remove_profile_entries "$HOME/.bashrc"
+  remove_profile_entries "$HOME/.zshrc"
 
-if [ -f "$HOME/.npmrc" ]; then
-  rm -f "$HOME/.npmrc"
-  echo "✅ Removed $HOME/.npmrc"
-fi
+  if [ -d "$HOME/.npm" ]; then
+    rm -rf "$HOME/.npm"
+    echo "🗑️ Removed npm cache: $HOME/.npm"
+  fi
 
-echo "✅ Node.js/NVM uninstall completed."
+  if [ -d "$HOME/.node-gyp" ]; then
+    rm -rf "$HOME/.node-gyp"
+    echo "🗑️ Removed node-gyp cache: $HOME/.node-gyp"
+  fi
+
+  echo "✅ NVM removed. Open a new terminal to ensure shell changes apply."
+}
+
+main "$@"

@@ -1,198 +1,160 @@
 #!/bin/bash
 
-set -euo pipefail
-
-echo "📦 Node.js Installer (NVM + npm)"
-
-# Instala NVM se necessário (fonte oficial do projeto nvm)
-if [ ! -d "$HOME/.nvm" ]; then
-  echo "🔧 Installing NVM (Node Version Manager)..."
-  curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+# Re-exec with bash if called from sh/dash
+if [ -z "${BASH_VERSION:-}" ]; then
+  exec bash "$0" "$@"
 fi
 
-# Carrega NVM
-export NVM_DIR="$HOME/.nvm"
-# shellcheck source=/dev/null
-source "$NVM_DIR/nvm.sh"
+set -e
 
-if ! command -v nvm >/dev/null 2>&1; then
-  echo "❌ NVM was not loaded correctly."
-  exit 1
-fi
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+NVM_DIR="$HOME/.nvm"
+NVM_INSTALL_URL="https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh"
 
+ask_node_version() {
+  local default_version="lts/*"
+  local versions_list=""
 
-ensure_nvm_shell_integration() {
-  local marker_start="# >>> nvm auto-load >>>"
-  local block
-  local shell_name
-  local target_files=()
+  # Try to get Node versions from Node.js API
+  if command -v curl >/dev/null 2>&1; then
+    echo "📡 Fetching available Node.js versions..."
+    versions_list=$(curl -s https://nodejs.org/dist/index.json | grep -o '"version":"[^"]*"' | sed 's/"version":"//;s/"//' | head -20)
+  fi
 
-  block=$(cat <<'EOF'
-# >>> nvm auto-load >>>
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-# <<< nvm auto-load <<<
-EOF
-)
+  if [ -n "$versions_list" ] && command -v whiptail >/dev/null 2>&1; then
+    # Create menu options
+    local menu_options=""
+    local count=1
 
-  shell_name=$(basename "${SHELL:-}")
-  case "$shell_name" in
-    bash)
-      target_files+=("$HOME/.bashrc")
-      ;;
-    zsh)
-      target_files+=("$HOME/.zshrc")
-      ;;
-    *)
-      target_files+=("$HOME/.bashrc" "$HOME/.zshrc")
-      ;;
-  esac
+    # Add LTS option
+    menu_options+="\"lts/*\" \"Latest LTS (recommended)\" "
+    count=$((count + 1))
 
-  for shell_file in "${target_files[@]}"; do
-    touch "$shell_file"
-    if ! grep -Fq "$marker_start" "$shell_file"; then
-      {
-        echo
-        echo "$block"
-      } >> "$shell_file"
-      echo "ℹ️ Added nvm auto-load block to $shell_file"
+    # Add stable option
+    menu_options+="\"stable\" \"Latest stable\" "
+    count=$((count + 1))
+
+    # Add recent versions
+    echo "$versions_list" | head -10 | while read -r version; do
+      # Remove 'v' prefix if present
+      version=$(echo "$version" | sed 's/^v//')
+      menu_options+="\"$version\" \"Node.js $version\" "
+      count=$((count + 1))
+    done
+
+    # Add manual entry option
+    menu_options+="\"manual\" \"Enter version manually\" "
+
+    # Create the whiptail menu
+    NODE_VERSION=$(eval "whiptail --title \"Select Node.js Version\" --menu \
+      \"Choose Node.js version to install:\" 20 70 12 \
+      $menu_options \
+      3>&1 1>&2 2>&3")
+
+    if [ "$NODE_VERSION" = "manual" ]; then
+      NODE_VERSION=$(whiptail --title "Node.js Version" --inputbox \
+        "Enter the Node.js version to install:\nExamples: lts/*, stable, 20.0.0" 10 60 "$default_version" 3>&1 1>&2 2>&3)
     fi
-  done
+
+  elif [ -n "$versions_list" ]; then
+    echo "Available Node.js versions (recent):"
+    echo "1) lts/* - Latest LTS (recommended)"
+    echo "2) stable - Latest stable"
+    local count=3
+    echo "$versions_list" | head -10 | while read -r version; do
+      version=$(echo "$version" | sed 's/^v//')
+      echo "$count) $version"
+      count=$((count + 1))
+    done
+    echo "0) Enter manually"
+
+    read -r -p "Select version number [1]: " choice
+    choice="${choice:-1}"
+
+    case $choice in
+      1) NODE_VERSION="lts/*" ;;
+      2) NODE_VERSION="stable" ;;
+      0) read -r -p "Enter the Node.js version [$default_version]: " NODE_VERSION
+         NODE_VERSION="${NODE_VERSION:-$default_version}" ;;
+      *) NODE_VERSION=$(echo "$versions_list" | sed -n "${choice}p" | sed 's/^v//') ;;
+    esac
+
+  else
+    # Fallback to simple input
+    read -r -p "Enter the Node.js version to install [$default_version]: " NODE_VERSION
+    NODE_VERSION="${NODE_VERSION:-$default_version}"
+  fi
+
+  NODE_VERSION="${NODE_VERSION:-$default_version}"
 }
 
-# Busca versões da fonte oficial do Node.js
-NODE_INDEX_JSON=$(mktemp)
-trap 'rm -f "$NODE_INDEX_JSON"' EXIT
+ensure_prerequisites() {
+  echo "🔧 Installing prerequisites..."
+  sudo apt update
+  sudo apt install -y curl git ca-certificates build-essential libssl-dev
+}
 
-if ! curl -fsSL "https://nodejs.org/dist/index.json" -o "$NODE_INDEX_JSON"; then
-  echo "❌ Unable to fetch Node.js versions from https://nodejs.org/dist/index.json"
-  exit 1
-fi
+append_nvm_init() {
+  local profile="$1"
+  if [ ! -f "$profile" ]; then
+    touch "$profile"
+  fi
 
-mapfile -t NODE_VERSIONS < <(
-  python3 - "$NODE_INDEX_JSON" <<'PY'
-import json
-import sys
+  if grep -q 'NVM_DIR' "$profile"; then
+    return
+  fi
 
-path = sys.argv[1]
-with open(path, 'r', encoding='utf-8') as f:
-    data = json.load(f)
+  cat >> "$profile" <<'RC'
+# NVM initialization
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+RC
+}
 
-versions = []
-seen = set()
-for entry in data:
-    version = entry.get('version', '').lstrip('v')
-    if not version or version in seen:
-        continue
-    seen.add(version)
-    versions.append(version)
-
-latest = versions[0] if versions else ''
-lts = ''
-for entry in data:
-    if entry.get('lts'):
-        lts = entry.get('version', '').lstrip('v')
-        break
-
-majors = []
-seen_major = set()
-for version in versions:
-    major = version.split('.')[0]
-    if major not in seen_major:
-        seen_major.add(major)
-        majors.append(version)
-    if len(majors) >= 5:
-        break
-
-if latest:
-    print(f"latest|Latest current ({latest})")
-if lts:
-    print(f"lts/*|Latest LTS ({lts})")
-for v in majors:
-    print(f"{v}|Latest {v.split('.')[0]}.x ({v})")
-print("custom|Type a custom version")
-PY
-)
-
-if [ "${#NODE_VERSIONS[@]}" -eq 0 ]; then
-  echo "❌ No Node.js versions were found from the official index."
-  exit 1
-fi
-
-if command -v node >/dev/null 2>&1; then
-  CURRENT_NODE_VERSION=$(node -v)
-  echo "ℹ️ Node.js already installed: $CURRENT_NODE_VERSION"
-
-  if whiptail --title "Node.js already installed" --yesno \
-    "Node.js $CURRENT_NODE_VERSION is already installed. Do you want to install/switch another version?" 10 75; then
-    echo "🔄 Proceeding with Node.js version selection..."
+install_nvm() {
+  if [ -d "$NVM_DIR" ]; then
+    echo "ℹ️ NVM already appears installed at $NVM_DIR"
   else
-    echo "✅ Keeping current Node.js version: $CURRENT_NODE_VERSION"
-    exit 0
-  fi
-fi
-
-while true; do
-  MENU_ARGS=()
-  for item in "${NODE_VERSIONS[@]}"; do
-    key=${item%%|*}
-    label=${item#*|}
-    MENU_ARGS+=("$key" "$label")
-  done
-
-  SELECTED=$(whiptail --title "Node.js Installer" --menu \
-    "Select the Node.js version to install via NVM:" \
-    22 78 12 "${MENU_ARGS[@]}" 3>&1 1>&2 2>&3) || {
-      echo "⚠️ Version selection cancelled."
-      break
-    }
-
-  NODE_VERSION="$SELECTED"
-  if [ "$SELECTED" = "custom" ]; then
-    NODE_VERSION=$(whiptail --title "Custom Node.js version" --inputbox \
-      "Type a version supported by nvm (examples: 22, 20.12.2, lts/*, node):" \
-      12 78 3>&1 1>&2 2>&3) || {
-        echo "⚠️ Custom version input cancelled."
-        continue
-      }
+    echo "⬇️ Downloading and installing NVM..."
+    curl -fsSL "$NVM_INSTALL_URL" | bash
   fi
 
-  if [ -z "${NODE_VERSION// }" ]; then
-    whiptail --title "Invalid value" --msgbox "Version cannot be empty." 8 50
-    continue
-  fi
+  export NVM_DIR="$NVM_DIR"
+  # shellcheck source=/dev/null
+  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
-  if ! whiptail --title "Confirm Installation" --yesno \
-    "Install and set default Node.js version: $NODE_VERSION ?" 10 70; then
-    echo "❌ Installation cancelled by user."
-    continue
+  if ! command -v nvm >/dev/null 2>&1; then
+    echo "❌ Failed to load nvm. Check $NVM_DIR"
+    exit 1
   fi
+}
 
-  echo "📥 Installing Node.js $NODE_VERSION via NVM..."
+install_node() {
+  echo "⬇️ Installing Node.js $NODE_VERSION via NVM..."
   nvm install "$NODE_VERSION"
+  nvm alias default "$NODE_VERSION"
+  nvm use default
+}
 
-  RESOLVED_VERSION=$(nvm version "$NODE_VERSION")
-  if [ "$RESOLVED_VERSION" = "N/A" ]; then
-    echo "❌ Unable to resolve installed version for $NODE_VERSION."
-    continue
+show_success() {
+  echo "✅ Node.js installed successfully!"
+  command -v nvm >/dev/null 2>&1 && nvm --version && echo "nvm available"
+  command -v node >/dev/null 2>&1 && node -v && echo "node available"
+  command -v npm >/dev/null 2>&1 && npm -v && echo "npm available"
+  echo "⚠️ Open a new terminal to load NVM automatically or run: source ~/.bashrc or source ~/.zshrc"
+}
+
+main() {
+  ask_node_version
+  ensure_prerequisites
+  install_nvm
+  append_nvm_init "$HOME/.bashrc"
+  if [ -n "${ZSH_VERSION:-}" ] || [ -f "$HOME/.zshrc" ]; then
+    append_nvm_init "$HOME/.zshrc"
   fi
+  install_node
+  show_success
+}
 
-  nvm use "$RESOLVED_VERSION"
-  nvm alias default "$RESOLVED_VERSION"
-  ensure_nvm_shell_integration
-
-  INSTALLED_VERSION=$(node -v 2>/dev/null || true)
-  if [ -n "$INSTALLED_VERSION" ]; then
-    NPM_VERSION=$(npm -v 2>/dev/null || true)
-    echo "✅ Node.js $INSTALLED_VERSION ready to use (npm $NPM_VERSION)."
-    echo "ℹ️ Default nvm alias now points to $RESOLVED_VERSION."
-  else
-    echo "⚠️ Node.js version $NODE_VERSION may not have been installed correctly."
-  fi
-
-  if ! whiptail --title "Install Another?" --yesno \
-    "Do you want to install/switch another Node.js version?" 10 65; then
-    echo "👉 Continuing to next setup script..."
-    break
-  fi
-done
+main "$@"
