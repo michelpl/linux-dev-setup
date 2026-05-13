@@ -14,7 +14,7 @@ DESKTOP_FILE="$HOME/.local/share/applications/postman.desktop"
 mkdir -p "$TMP_DIR"
 cd "$TMP_DIR"
 
-# Verifica se já está instalado
+# Check if already installed
 if [ -f "$INSTALL_DIR/Postman" ]; then
   echo "✅ Postman already installed at $INSTALL_DIR"
 

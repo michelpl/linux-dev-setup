@@ -33,7 +33,7 @@ This script (`script.sh`) is compatible with Ubuntu, installs `git` and the GitH
 
 ```bash
 git clone https://github.com/michelpl/linux-dev-setup.git
-cd linux-dev-setup/Ubuntu-24.04
+cd linux-dev-setup/Ubuntu
 chmod +x setup.sh
 ```
 
@@ -79,7 +79,7 @@ You’ll be presented with a checklist of all installed apps (with uninstall scr
 ## 🗂️ Project Structure
 
 ```
-linux-dev-setup/Ubuntu-24.04
+linux-dev-setup/Ubuntu
 ├── setup.sh               # Main entry point
 ├── apps/
 │   ├── chrome.sh          # App install scripts
@@ -92,19 +92,21 @@ linux-dev-setup/Ubuntu-24.04
 └── install.log            # Logs of all actions
 ```
 
+Re-running `Ubuntu/apps/zsh.sh` upgrades the `zsh` package and Oh My Zsh (when possible) and refreshes the `~/.aliases.zsh` symlink to `configs/aliases.zsh`, so alias changes in the repo apply on the next shell reload (`refresh-zsh` or a new terminal).
+
 ---
 
 ## ✍️ Adding a New App or Contributing
 
 Want to add a new app or improve the setup? Contributions are welcome!
 
-1. Create an install script inside `apps/`:
+1. Create an install script inside `Ubuntu/apps/`:
    ```bash
-   apps/mytool.sh
+   Ubuntu/apps/mytool.sh
    ```
 2. (Optional) Create a matching uninstall script:
    ```bash
-   apps/uninstall/mytool-uninstall.sh
+   Ubuntu/apps/uninstall/mytool-uninstall.sh
    ```
 3. Your app will automatically appear in the setup and uninstall menus.
 4. Open a Pull Request with your changes!

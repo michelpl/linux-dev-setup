@@ -6,14 +6,14 @@ Thank you for your interest in contributing! 🎉
 
 All install and uninstall scripts are tested and maintained for Ubuntu 24.04 LTS. Please ensure your contributions are compatible with this version.
 
-If you want to contribute scripts for another OS/version, create a new folder named after the OS and version you tested (e.g., `Ubuntu-22.04`, `Fedora-39`, `Debian-12`). Follow the same structure and conventions as the existing folders.
+If you want to contribute scripts for another OS/version, create a new folder named after the OS and version you tested (e.g., `Ubuntu-22.04`, `Fedora-39`, `Debian-12`). Follow the same structure and conventions as the existing folders. The default, maintained tree for the current Ubuntu LTS is [`Ubuntu/`](Ubuntu/).
 
 ## How to Contribute
 
 1. **Fork the repository** and create your branch from `main`.
 2. **Add a new app:**
-   - Create an install script in `apps/` (e.g., `apps/mytool.sh`).
-   - (Optional) Create a matching uninstall script in `apps/uninstall/` (e.g., `apps/uninstall/mytool-uninstall.sh`).
+   - Create an install script in `Ubuntu/apps/` (e.g., `Ubuntu/apps/mytool.sh`).
+   - (Optional) Create a matching uninstall script in `Ubuntu/apps/uninstall/` (e.g., `Ubuntu/apps/uninstall/mytool-uninstall.sh`).
    - Your app will appear automatically in the setup and uninstall menus.
 3. **Improve scripts or documentation:**
    - Feel free to refactor, fix bugs, or improve the README/docs.

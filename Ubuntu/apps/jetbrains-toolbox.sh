@@ -14,7 +14,7 @@ AUTOSTART_FILE="$HOME/.config/autostart/jetbrains-toolbox.desktop"
 mkdir -p "$TMP_DIR"
 cd "$TMP_DIR"
 
-# 🧠 Tenta detectar a versão mais recente
+# 🧠 Try to detect the latest version
 SHA_URL="https://download.jetbrains.com/toolbox/jetbrains-toolbox.tar.gz.sha256"
 ACTUAL_URL=$(curl -sI "$SHA_URL" | grep -i location | awk '{print $2}' | tr -d '\r\n')
 
@@ -34,7 +34,7 @@ fi
 TOOLBOX_FILENAME="jetbrains-toolbox-${LATEST_VERSION}.tar.gz"
 DOWNLOAD_URL="https://download.jetbrains.com/toolbox/$TOOLBOX_FILENAME"
 
-# Verifica se já está instalado
+# Check if already installed
 if [ -f "$INSTALL_DIR/bin/jetbrains-toolbox" ]; then
   echo "✅ JetBrains Toolbox already installed at $INSTALL_DIR"
 
@@ -50,7 +50,7 @@ if [ -f "$INSTALL_DIR/bin/jetbrains-toolbox" ]; then
   exit 0
 fi
 
-# Baixa somente se necessário
+# Download only if needed
 if [ ! -f "$TOOLBOX_FILENAME" ]; then
   echo "⬇️ Downloading JetBrains Toolbox v$LATEST_VERSION..."
   wget "$DOWNLOAD_URL" -O "$TOOLBOX_FILENAME"
@@ -65,10 +65,10 @@ cd jetbrains-toolbox-*/
 echo "🚀 Running Toolbox installer..."
 ./jetbrains-toolbox &
 
-# Aguarda instalação
+# Wait for installation
 sleep 5
 
-# Cria .desktop launcher
+# Create .desktop launcher
 if [ ! -f "$DESKTOP_FILE" ]; then
   echo "🧷 Creating application launcher..."
   mkdir -p "$(dirname "$DESKTOP_FILE")"
@@ -86,11 +86,11 @@ StartupWMClass=jetbrains-toolbox
 EOF
 fi
 
-# Cria symlink para terminal
+# Create symlink for terminal use
 mkdir -p "$BIN_DIR"
 ln -sf "$INSTALL_DIR/bin/jetbrains-toolbox" "$BIN_LINK"
 
-# Adiciona à inicialização se o usuário quiser
+# Add to startup if the user wants
 if whiptail --yesno "Do you want JetBrains Toolbox to start automatically on login?" 10 60; then
   mkdir -p "$(dirname "$AUTOSTART_FILE")"
   cp "$DESKTOP_FILE" "$AUTOSTART_FILE"
