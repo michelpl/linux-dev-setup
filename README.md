@@ -27,6 +27,36 @@ This script (`script.sh`) is compatible with Ubuntu, installs `git` and the GitH
 
 ---
 
+## Homelab / Homeserver host setup
+
+Prepare an Ubuntu machine (post-install) to run the [homeserver](https://github.com/michelpl/homeserver) Docker stacks: Docker Engine, SSH hardening, UFW, fail2ban, unattended security upgrades, and always-on power settings. Tailscale and application stacks are **not** installed here—they live in the homeserver repo.
+
+### Quick path
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/michelpl/linux-dev-setup/main/script.sh | bash
+cd ~/projects/linux-dev-setup/Ubuntu
+./setup.sh i homelab-host
+# Log out and back in if you were added to the docker group
+```
+
+### What `homelab-host` installs
+
+| App | Purpose |
+|-----|---------|
+| `docker` | Docker Engine + Compose v2, enabled on boot |
+| `openssh-hardening` | SSH key-only auth, drop-in `99-homelab.conf` |
+| `ufw` | Firewall: deny incoming except SSH |
+| `fail2ban` | sshd jail |
+| `unattended-upgrades` | Automatic security updates |
+| `homelab-power` | Disable suspend/hibernate |
+
+**Before hardening SSH on a remote machine:** ensure your public key is in `~/.ssh/authorized_keys`.
+
+See [docs/homelab.md](docs/homelab.md) for the full flow into the homeserver repository.
+
+---
+
 ## ⚙️ Usage
 
 ### 1. Clone this repo
