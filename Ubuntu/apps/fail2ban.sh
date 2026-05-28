@@ -7,7 +7,7 @@ if ! command -v fail2ban-client >/dev/null 2>&1; then
   sudo apt-get install -y fail2ban
 fi
 
-JAIL_LOCAL="/etc/fail2ban/jail.d/homelab.local"
+JAIL_LOCAL="/etc/fail2ban/jail.d/homeserver.local"
 if [[ ! -f "$JAIL_LOCAL" ]]; then
   echo "Creating fail2ban jail for sshd..."
   sudo tee "$JAIL_LOCAL" >/dev/null <<'EOF'

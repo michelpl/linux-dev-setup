@@ -6,7 +6,7 @@ echo "Disabling system suspend and hibernate..."
 # systemd-logind (works on Desktop and Server)
 LOGIN_CONF="/etc/systemd/logind.conf"
 sudo mkdir -p /etc/systemd/logind.conf.d
-sudo tee /etc/systemd/logind.conf.d/homelab.conf >/dev/null <<'EOF'
+sudo tee /etc/systemd/logind.conf.d/homeserver.conf >/dev/null <<'EOF'
 [Login]
 HandleSuspendKey=ignore
 HandleHibernateKey=ignore
@@ -28,4 +28,4 @@ if command -v gsettings >/dev/null 2>&1; then
 fi
 
 sudo systemctl restart systemd-logind 2>/dev/null || true
-echo "Power management adjusted for always-on homelab use."
+echo "Power management adjusted for always-on homeserver host use."

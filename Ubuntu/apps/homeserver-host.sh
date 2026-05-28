@@ -20,8 +20,8 @@ run_app openssh-hardening
 run_app ufw
 run_app fail2ban
 run_app unattended-upgrades
-run_app homelab-power
+run_app homeserver-power
 
 echo ""
-echo "Homelab host preset completed."
+echo "Homeserver host preset completed."
 echo "Next: clone the homeserver repo, run make init-local && make deploy"

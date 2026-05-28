@@ -2,8 +2,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SNIPPET_SRC="$SCRIPT_DIR/../configs/sshd/99-homelab.conf"
-SNIPPET_DST="/etc/ssh/sshd_config.d/99-homelab.conf"
+SNIPPET_SRC="$SCRIPT_DIR/../configs/sshd/99-homeserver.conf"
+SNIPPET_DST="/etc/ssh/sshd_config.d/99-homeserver.conf"
 
 if [[ ! -f "$SNIPPET_SRC" ]]; then
   echo "ERROR: Missing SSH config snippet at $SNIPPET_SRC" >&2

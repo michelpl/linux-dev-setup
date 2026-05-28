@@ -1,4 +1,4 @@
-# Homelab host bootstrap
+# Homeserver host bootstrap
 
 This document describes how to prepare an Ubuntu host for the **homeserver** project. It does **not** cover OS installation.
 
@@ -17,14 +17,14 @@ curl -fsSL https://raw.githubusercontent.com/michelpl/linux-dev-setup/main/scrip
 
 This installs `git`, authenticates `gh`, and clones this repo to `~/projects/linux-dev-setup`.
 
-## Step 2: Homelab host preset
+## Step 2: Homeserver host preset
 
 ```bash
 cd ~/projects/linux-dev-setup/Ubuntu
-./setup.sh i homelab-host
+./setup.sh i homeserver-host
 ```
 
-Or install components individually: `docker`, `openssh-hardening`, `ufw`, `fail2ban`, `unattended-upgrades`, `homelab-power`.
+Or install components individually: `docker`, `openssh-hardening`, `ufw`, `fail2ban`, `unattended-upgrades`, `homeserver-power`.
 
 Log out and back in after Docker installs if your user was added to the `docker` group.
 
@@ -49,4 +49,4 @@ Application updates are delivered by **GitHub Actions** (rsync + deploy over SSH
 
 ## Re-running safely
 
-All scripts are idempotent. Re-run `./setup.sh i homelab-host` after pulling updates to this repository.
+All scripts are idempotent. Re-run `./setup.sh i homeserver-host` after pulling updates to this repository.
