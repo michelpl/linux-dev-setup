@@ -29,7 +29,7 @@ This script (`script.sh`) is compatible with Ubuntu, installs `git` and the GitH
 
 ## Homeserver host setup
 
-Prepare an Ubuntu machine (post-install) to run the [homeserver](https://github.com/michelpl/homeserver) Docker stacks: Docker Engine, SSH hardening, UFW, fail2ban, unattended security upgrades, and always-on power settings. Tailscale and application stacks are **not** installed here—they live in the homeserver repo.
+Prepare an Ubuntu machine (post-install) to run the [homeserver](https://github.com/michelpl/homeserver) Docker stacks: Docker Engine, Tailscale package, SSH hardening, UFW, fail2ban, unattended security upgrades, and always-on power settings. Tailscale **auth** (`tailscale up`) and application stacks live in the homeserver repo.
 
 ### Quick path
 
@@ -45,11 +45,12 @@ cd ~/projects/linux-dev-setup/Ubuntu
 | App | Purpose |
 |-----|---------|
 | `docker` | Docker Engine + Compose v2, enabled on boot |
+| `tailscale` | Tailscale package + `tailscaled` (no auth) |
 | `openssh-hardening` | SSH key-only auth, drop-in `99-homeserver.conf` |
 | `ufw` | Firewall: deny incoming except SSH |
 | `fail2ban` | sshd jail |
 | `unattended-upgrades` | Automatic security updates |
-| `homeserver-power` | Disable suspend/hibernate |
+| `homeserver-power` | Always-on: mask suspend/hibernate + logind/GNOME policy |
 
 **Before hardening SSH on a remote machine:** ensure your public key is in `~/.ssh/authorized_keys`.
 

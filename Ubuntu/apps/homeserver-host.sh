@@ -16,6 +16,7 @@ run_app() {
 }
 
 run_app docker
+run_app tailscale
 run_app openssh-hardening
 run_app ufw
 run_app fail2ban
@@ -24,4 +25,4 @@ run_app homeserver-power
 
 echo ""
 echo "Homeserver host preset completed."
-echo "Next: clone the homeserver repo, run make init-local && make deploy"
+echo "Next: clone the homeserver repo and run ./scripts/bootstrap-server.sh"
